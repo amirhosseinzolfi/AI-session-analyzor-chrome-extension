@@ -14,6 +14,8 @@ let recordingStartTime = null;
 let refreshTimeoutId = null;
 let hasRealtimeSync = false;
 let pendingVisibilityRefresh = false;
+let analyzingOverlayTimeoutId = null;
+let analyzingOverlayTimedOut = false;
 
 const BACKEND_BASE_URL = "http://82.115.13.132:15306";
 const BACKEND_ANALYZE_URL = `${BACKEND_BASE_URL}/analyze_base64`;
@@ -22,6 +24,7 @@ const AUDIO_STORAGE_PREFIX = "sessionAudio_";
 const REFRESH_DEBOUNCE_MS = 200;
 const ANALYZE_TIMEOUT_MS = 240000; // 4 minutes for long AI requests
 const AUDIO_FETCH_TIMEOUT_MS = 60000; // 1 minute for fetching stored audio
+const ANALYZING_OVERLAY_TIMEOUT_MS = 45000; // Auto-dismiss waiting overlay after 45 seconds
 
 async function send(action, payload = {}) {
   return chrome.runtime.sendMessage({ action, payload });
@@ -661,35 +664,58 @@ clearBtn.addEventListener("click", async () => {
 initRealtimeSessionSync();
 refreshSessions();
 
-function showAnalyzingOverlay() {
-  if (document.getElementById('analyzingOverlay')) return;
-  const overlay = document.createElement('div');
-  overlay.id = 'analyzingOverlay';
-  overlay.className = 'analyzing-overlay';
-  overlay.innerHTML = `
-    <div class="analyzing-content">
-      <div class="ai-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-          <path d="M2 17l10 5 10-5"></path>
-          <path d="M2 12l10 5 10-5"></path>
-        </svg>
-      </div>
-      <div class="analyzing-text">تحلیل جلسه با هوش مصنوعی</div>
-      <div class="analyzing-subtext">
-        <div class="dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        لطفاً صبر کنید
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+function scheduleAnalyzingOverlayTimeout() {
+  if (analyzingOverlayTimeoutId) return;
+  analyzingOverlayTimeoutId = setTimeout(() => {
+    analyzingOverlayTimeoutId = null;
+    analyzingOverlayTimedOut = true;
+    hideAnalyzingOverlay({ resetTimeoutState: false });
+  }, ANALYZING_OVERLAY_TIMEOUT_MS);
 }
 
-function hideAnalyzingOverlay() {
+function resetAnalyzingOverlayTimeoutState() {
+  if (analyzingOverlayTimeoutId) {
+    clearTimeout(analyzingOverlayTimeoutId);
+    analyzingOverlayTimeoutId = null;
+  }
+  analyzingOverlayTimedOut = false;
+}
+
+function showAnalyzingOverlay() {
+  if (analyzingOverlayTimedOut) return;
+  if (!document.getElementById('analyzingOverlay')) {
+    const overlay = document.createElement('div');
+    overlay.id = 'analyzingOverlay';
+    overlay.className = 'analyzing-overlay';
+    overlay.innerHTML = `
+      <div class="analyzing-content">
+        <div class="ai-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <div class="analyzing-text">تحلیل جلسه با هوش مصنوعی</div>
+        <div class="analyzing-subtext">
+          <div class="dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          لطفاً صبر کنید
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  scheduleAnalyzingOverlayTimeout();
+}
+
+function hideAnalyzingOverlay({ resetTimeoutState = true } = {}) {
+  if (resetTimeoutState) {
+    resetAnalyzingOverlayTimeoutState();
+  }
   const overlay = document.getElementById('analyzingOverlay');
   if (overlay) {
     overlay.classList.add('fade-out');
