@@ -1,6 +1,7 @@
-const BACKEND_BASE_URL = "http://82.115.13.132:15306";
-const BACKEND_ANALYZE_URL = `${BACKEND_BASE_URL}/analyze_base64`;
-const ANALYZE_TIMEOUT_MS = 240000; // 4 minutes to mirror backend upper bound
+import {
+  BACKEND_ANALYZE_URL,
+  ANALYZE_TIMEOUT_MS
+} from './config.js';
 
 function fetchWithTimeout(url, options = {}, timeoutMs = ANALYZE_TIMEOUT_MS) {
   if (options?.signal) return fetch(url, options);

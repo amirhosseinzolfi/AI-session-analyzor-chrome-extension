@@ -1,10 +1,15 @@
-const OFFSCREEN_URL = chrome.runtime.getURL("offscreen.html");
-const REPORT_VIEW_URL = chrome.runtime.getURL("report.html");
-const AUDIO_STORAGE_PREFIX = "sessionAudio_";
-const BACKEND_BASE_URL = "http://82.115.13.132:15306";
-const BACKEND_AUDIO_URL = `${BACKEND_BASE_URL}/session_audio`;
-const ANALYZE_TIMEOUT_MS = 240000;
-const AUDIO_FETCH_TIMEOUT_MS = 60000;
+import {
+  BACKEND_BASE_URL,
+  BACKEND_AUDIO_URL,
+  ANALYZE_TIMEOUT_MS,
+  AUDIO_FETCH_TIMEOUT_MS,
+  AUDIO_STORAGE_PREFIX,
+  OFFSCREEN_PATH,
+  REPORT_PATH
+} from './config.js';
+
+const OFFSCREEN_URL = chrome.runtime.getURL(OFFSCREEN_PATH);
+const REPORT_VIEW_URL = chrome.runtime.getURL(REPORT_PATH);
 const autoOpenedReportSessions = new Set();
 
 function fetchWithTimeout(url, options = {}, timeoutMs = ANALYZE_TIMEOUT_MS) {

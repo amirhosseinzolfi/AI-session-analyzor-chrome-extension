@@ -17,13 +17,16 @@ let pendingVisibilityRefresh = false;
 let analyzingOverlayTimeoutId = null;
 let analyzingOverlayTimedOut = false;
 
-const BACKEND_BASE_URL = "http://82.115.13.132:15306";
-const BACKEND_ANALYZE_URL = `${BACKEND_BASE_URL}/analyze_base64`;
-const BACKEND_AUDIO_URL = `${BACKEND_BASE_URL}/session_audio`;
-const AUDIO_STORAGE_PREFIX = "sessionAudio_";
+import {
+  BACKEND_BASE_URL,
+  BACKEND_ANALYZE_URL,
+  BACKEND_AUDIO_URL,
+  AUDIO_STORAGE_PREFIX,
+  ANALYZE_TIMEOUT_MS,
+  AUDIO_FETCH_TIMEOUT_MS
+} from './config.js';
+
 const REFRESH_DEBOUNCE_MS = 200;
-const ANALYZE_TIMEOUT_MS = 240000; // 4 minutes for long AI requests
-const AUDIO_FETCH_TIMEOUT_MS = 60000; // 1 minute for fetching stored audio
 const ANALYZING_OVERLAY_TIMEOUT_MS = 45000; // Auto-dismiss waiting overlay after 45 seconds
 
 async function send(action, payload = {}) {
@@ -478,7 +481,7 @@ recordBtn.addEventListener("click", async () => {
           sampleRate: 44100
         }
       });
-      console.log("Microphone captured");
+      // console.log("Microphone captured");
     } catch (e) {
       console.warn("Microphone not available:", e);
       micStreamRef = null;
@@ -496,7 +499,7 @@ recordBtn.addEventListener("click", async () => {
       preferCurrentTab: false,
       systemAudio: "include"
     });
-    console.log("Display captured");
+    // console.log("Display captured");
 
     const audioCtx = new AudioContext({ sampleRate: 44100 });
     const destination = audioCtx.createMediaStreamDestination();
@@ -506,10 +509,10 @@ recordBtn.addEventListener("click", async () => {
     // Mix display audio (system/tab audio)
     const displayAudioTracks = displayStreamRef.getAudioTracks();
     if (displayAudioTracks.length > 0) {
-      console.log(`Display audio tracks: ${displayAudioTracks.length}`);
-      displayAudioTracks.forEach((track, i) => {
-        console.log(`Display track ${i}: ${track.label}`);
-      });
+      // console.log(`Display audio tracks: ${displayAudioTracks.length}`);
+      // displayAudioTracks.forEach((track, i) => {
+      //   console.log(`Display track ${i}: ${track.label}`);
+      // });
       const displaySource = audioCtx.createMediaStreamSource(displayStreamRef);
       displaySource.connect(destination);
       hasAudio = true;
@@ -519,7 +522,7 @@ recordBtn.addEventListener("click", async () => {
     
     // Mix microphone audio
     if (micStreamRef?.getAudioTracks().length) {
-      console.log(`Microphone tracks: ${micStreamRef.getAudioTracks().length}`);
+      // console.log(`Microphone tracks: ${micStreamRef.getAudioTracks().length}`);
       const micSource = audioCtx.createMediaStreamSource(micStreamRef);
       micSource.connect(destination);
       hasAudio = true;
@@ -544,17 +547,17 @@ recordBtn.addEventListener("click", async () => {
     }
     
     recorder = new MediaRecorder(mixedStream, options);
-    console.log("MediaRecorder created with:", options.mimeType);
+    // console.log("MediaRecorder created with:", options.mimeType);
 
     recorder.ondataavailable = (e) => {
       if (e.data?.size > 0) {
         chunks.push(e.data);
-        console.log(`Chunk ${chunks.length}: ${e.data.size} bytes`);
+        // console.log(`Chunk ${chunks.length}: ${e.data.size} bytes`);
       }
     };
 
     recorder.onstop = async () => {
-      console.log(`Recording stopped. Total chunks: ${chunks.length}`);
+      // console.log(`Recording stopped. Total chunks: ${chunks.length}`);
       const durationMinutes = (Date.now() - recordingStartTime) / 60000;
       displayStreamRef?.getTracks()?.forEach(t => t.stop());
       micStreamRef?.getTracks()?.forEach(t => t.stop());
@@ -574,7 +577,7 @@ recordBtn.addEventListener("click", async () => {
       }
 
       const blob = new Blob(chunks, { type: "audio/webm" });
-      console.log(`Blob created: ${blob.size} bytes`);
+      // console.log(`Blob created: ${blob.size} bytes`);
       
       if (blob.size === 0) {
         alert("خطا: فایل صوتی خالی است.");
@@ -596,7 +599,7 @@ recordBtn.addEventListener("click", async () => {
         r.readAsDataURL(blob);
       });
 
-      console.log(`Base64 encoded: ${base64.length} characters`);
+      // console.log(`Base64 encoded: ${base64.length} characters`);
 
       try {
         const response = await chrome.runtime.sendMessage({
@@ -635,7 +638,7 @@ recordBtn.addEventListener("click", async () => {
     };
 
     recorder.start(100);
-    console.log("Recording started");
+    // console.log("Recording started");
     recordBtn.disabled = false;
     await refreshSessions();
 
