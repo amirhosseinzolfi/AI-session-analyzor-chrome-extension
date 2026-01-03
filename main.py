@@ -149,54 +149,47 @@ async def get_session_report(audio_base64: str, mime_type: str, duration_minutes
         return {"title": "جلسه کوتاه", "session_report": "خطا: فایل صوتی بسیار کوتاه است.", "status": "error"}
 
     system_instruction = """
-شما یک خلاصهگر حرفهای جلسات تجاری هستید. وظیفه شما تولید یک گزارش ساختاریافته و دقیق از صوت ورودی مطابق اسکیمای خروجی است.
-first analyze all session voice so correctly and in detail and analyze each person voice and diffrent persons and all session voice content carefully 
-همچنین مدت زمان دقیق جلسه به صورت متن در کنار فایل صوتی برای شما ارسال شده است که باید در گزارش لحاظ شود.
-دستورالعملها:
-- خروجی فقط باید یک شیء JSON مطابق اسکیمای داده شده باشد؛ هیچ متن اضافی یا توضیحی ارسال نکنید.
-- اگر زبان صوت فارسی بود، خروجی را به فارسی حرفهای و مختصر بنویسید؛ اگر زبان دیگری بود، خروجی را به انگلیسی بنویسید.
-- کل محتوای نهایی و جواب نهایی فقط به یک زبان نوشته شود (زبان اصلی جلسه)
-- از ایموجی های مرتبط و میمنیمال و زیبا با هر عنوان ور قسمت استفاده کن حتما برای جذابیت بشتر متن
-- از تمام المان های مارک داون برای خوانایی بهتر و زیبایی بیشتر نتیجه نهایی استفاده کن با ایموجی های مرتبط
-- فیلدها:(در صورت نیاز میتونی از فیلدهای زیر استفاده کنی ولی حواست باشه تو باید خلاصه جلسه رو کامل و متناسب با محتوای جلسه بنویسی و اگه نیاز بود از فیلد های دیگر هم خودت بسار و ساتفاده کن )
-1. title
-- عنوان بسیار خلاصه، شفاف و کاربردی
-- حداکثر ۱۰ کلمه
-- تمرکز بر «موضوع اصلی تصمیمگیری یا هدف جلسه
+You are a professional business session summarizer. Your task is to generate a highly accurate, structured report from the provided audio input according to the specified output schema.
 
-2. session_report (Markdown)
-گزارش جلسه را دقیقاً با ساختار زیر تولید کن:
-ا
-## خلاصه جلسه
+**Core Task:**
+Thoroughly analyze the session audio, identifying distinct speakers and capturing the content in detail. A text note containing the total duration is provided alongside the audio; ensure this is reflected in the report.
 
-- موضوع اصلی جلسه
-- اعضای شرکت کننده در هر جلسه 
-- مقدار زمان جلسه به دقیقه
-- نمره اهمیت جلسه از یک تا صد
-- فرد تاثیر گذار و برتر جلسه
+**Guidelines:**
+- **Output Format:** Return ONLY a valid JSON object matching the schema. No preamble or postscript.
+- **Language:** use strict profesional and efficient persian language .
+- **Styling:** Use Markdown for structure and readability. Incorporate minimal, professional emojis to enhance visual appeal.
+- **Content:** Focus on impactful information. Avoid filler or irrelevant details. Use "Unspecified" or "Unknown" for missing or ambiguous information.
+- **Strict Accuracy:** Do not generate fake, unreal, or unmentioned information. Do not invent names, dates, tasks, or data points not explicitly stated in the audio. If information is missing, state it as "Not specified".
 
-## صورت جلسه
-- نکات و گزارش کلی جلسه در ابتدا در یک پاراگراف
-- گروه بندی طبق صحبت های هر فرد جدا گانه
-- نکات مهم عنوان شده توسط هر فرد
-- فقط اطلاعات اثرگذار (حذف حاشیهها)
-- نمره به هر فرد طبق اثر گذاری و مقدار شرکت در جلسه و نکات کلیدی مطرح شده توسط او و رتبه بندی اعضا طبق نمره
+**Field Specifications:**
 
+1. **title**
+- Concise, clear, and practical (max 10 words).
+- Focus on the primary goal or key decision of the session.
 
-## اقدامات و تصمیمات نهایی و تسک های هر فرد
+2. **session_report**
+Structure the markdown content as follows:
 
-- تصمیمات و اقدامات کلی تیم در ابتدا
-- بعد اقدامات و تسک های مربوط به هر فرد جداگانه
-- هر آیتم اکشن بهصورت بولت:
-  - شرح اقدام
-  - مالک (Owner)
-  - مهلت انجام (Deadline)
-- اگر مالک یا مهلت ذکر نشده بود → «ذکر نشده»
+## 📋 Session Summary
+- **Main Topic:** Primary subject of discussion.
+- **Participants:** List of attendees.
+- **Duration:** Total time in minutes.
+- **Importance Score:** (1-100) based on the session's impact.
+- **Key Contributor:** The most influential person in the session.
 
-- ساختار گزارش باید واضح، طبقهبندیشده و با بولتپوینتها باشد. از ایموجیهای مرتبط بهصورت محدود و حرفهای استفاده کنید.
-- آیتمهای اکشن را با ذکر مالک و ددلاین (در صورت وجود) بهصورت شفاف استخراج کنید.
-- اگر بخشی از صوت نامشخص یا مبهم بود، آن را با عبارت "نامشخص" یا "ذکر نشده" مشخص کنید.
-- از تکرار یا حاشیهروی پرهیز کنید و فقط اطلاعات مهم و کاربردی را استخراج نمایید.
+## 📝 Meeting Minutes
+- **Overview:** A concise paragraph summarizing the overall discussion.
+- **Speaker Breakdown:** Grouped insights for each participant.
+- **Key Points:** Significant contributions and arguments made by each individual.
+- **Participant Ranking:** A score and ranking for each member based on their contribution, key points, and engagement level.
+
+## ✅ Actions & Decisions
+- **Team Decisions:** General conclusions and agreements reached by the group.
+- **Individual Tasks:** Specific action items assigned to individuals.
+- **Task Format:**
+  - **Action:** Description of the task.
+  - **Owner:** Person responsible (or "Not specified").
+  - **Deadline:** Due date (or "Not specified").
 """
     
     log.info("🤖 Preparing LLM invocation")
