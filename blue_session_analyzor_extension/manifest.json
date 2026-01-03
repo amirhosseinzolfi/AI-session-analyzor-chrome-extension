@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "AI Session Analyzer",
+  "version": "1.0.0",
+  "description": "Record tab audio + microphone, send to backend for AI session report.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "files/logo.png",
+      "32": "files/logo.png",
+      "48": "files/logo.png",
+      "128": "files/logo.png"
+    }
+  },
+  "icons": {
+    "16": "files/logo.png",
+    "32": "files/logo.png",
+    "48": "files/logo.png",
+    "128": "files/logo.png"
+  },
+  "permissions": [
+    "storage",
+    "offscreen",
+    "tabCapture",
+    "activeTab",
+    "tabs",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "http://82.115.13.132:15306/*",
+    "http://localhost:15306/*",
+    "http://127.0.0.1:15306/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  }
+}

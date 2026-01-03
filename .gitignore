@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+extension_env/
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+*.env
+
+# Logs
+logs/
+*.log
+session_analyzer.log
+
+# Database (user sessions)
+database/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# History
+.history/
+
+# Test files
+session_report_output.json
+*.pdf
+*.jpg
+*.jpeg
+*.png
+!blue_session_analyzor_extension/files/*.png
+
+# Audio files
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.aac
+
+# Service files
+*.service
